@@ -31,7 +31,7 @@ const face = {
 
 const CARDSIZE = 102; 	// tamanho da carta (altura e largura)
 let faces = []; 		// Array que armazena objectos face que contêm posicionamentos da imagem e códigos dos paises
- 
+let flippedCards = []; // Array que armazena as cartas que foram viradas
 
 window.addEventListener("load", init, false);
 
@@ -69,20 +69,57 @@ function createCountries() {
 			umaCarta.classList.remove("escondida");
     */
    
-	// Adiciona as cartas do tabuleiro à stage:
-	const stage = game.stage;
+	// Define o tamanho do tabuleiro:
 	const totalCards = ROWS * COLS;
 	const pairs = totalCards / 2;
 
-	// Duplica e baralha as faces:
-	const shuffledFaces = [...faces.slice(0, pairs), ...faces.slice(0, pairs)]
-		.sort(() => Math.random() - 0.5);
-		// Nesta constante, o método slice() é usado para criar uma cópia do array faces, pegando apenas os primeiros "pairs" elementos.
-		// Em seguida, o operador de espalhamento (...) é usado para duplicar esses elementos e o método sort() é usado para embaralhar a ordem dos elementos.
-		// O resultado é um novo array que contém pares de faces, mas em uma ordem aleatória.
+	// Baralha as cartas:
+	scramble(pairs);
+
+	// Adiciona as cartas ao tabuleiro:
+	render();
+}
+
+// Vira a carta, mostrando ou escondendo a imagem e toca o respetivo som:
+function flipCard(card) {
+	if (card.classList.contains("escondida") && flippedCards.length < 2){
+		game.sounds.flip.play();
+		card.classList.remove("escondida");
+		flippedCards.push(card); // Adiciona a carta ao array de cartas viradas
 	
-	// Cria as cartas e as adiciona ao tabuleiro:
-	shuffledFaces.forEach((face, index) => {
+		// Verifica se duas cartas foram viradas:
+		if (flippedCards.length === 2){
+			checkMatch();
+		}
+	}	
+}
+
+// Verifica se as cartas viradas são iguais:
+function checkMatch(){
+	const [card1, card2] = flippedCards;
+
+	// Compara as posições de fundo das cartas para saber se são iguais:
+	if (card1.style.backgroundPosition === card2.style.backgroundPosition){
+		game.sounds.success.play();
+		card1.classList.add("certa");
+		card2.classList.add("certa");
+		flippedCards = []; // limpa o array de cartas viradas
+	} else {
+		game.sounds.hide.play();
+		setTimeout(() => {
+			card1.classList.add("escondida");
+			card2.classList.add("escondida");
+			flippedCards = []; // limpa o array de cartas viradas	
+		}, 500); // espera meio segundo antes de esconder as cartas
+	}
+}
+
+// Adicionar as cartas do tabuleiro à stage
+function render() {
+	const stage = game.stage;
+
+	 // Cria as cartas e as adiciona ao tabuleiro:
+	game.shuffledFaces.forEach((face, index) => {
 		const card = document.createElement("div");
 		card.classList.add("carta", "escondida");
 		card.style.backgroundPositionX = face.x;
@@ -103,27 +140,18 @@ function createCountries() {
 	});
 }
 
-// Vira a carta, mostrando ou escondendo a imagem e toca o respetivo som:
-function flipCard(card) {
-	if (card.classList.contains("escondida")){
-		game.sounds.flip.play();
-		card.classList.remove("escondida");
-	} else {
-		game.sounds.hide.play();
-		card.classList.add("escondida");
-	}
-	
-}
-
-// Adicionar as cartas do tabuleiro à stage
-function render() {
-	 
-}
-
 
 // baralha as cartas no tabuleiro
-function scramble() {
- 
+function scramble(pairs) {
+	// Duplica e baralha as faces:
+	const shuffledFaces = [...faces.slice(0, pairs), ...faces.slice(0, pairs)]
+		.sort(() => Math.random() - 0.5);
+		// Nesta constante, o método slice() é usado para criar uma cópia do array faces, pegando apenas os primeiros "pairs" elementos.
+		// Em seguida, o operador de espalhamento (...) é usado para duplicar esses elementos e o método sort() é usado para embaralhar a ordem dos elementos.
+		// O resultado é um novo array que contém pares de faces, mas em uma ordem aleatória.
+
+		// Atualiza o array faces com as faces baralhadas:
+		game.shuffledFaces = shuffledFaces;
 }
 
 function exemplo (){
