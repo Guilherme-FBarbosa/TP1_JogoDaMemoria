@@ -32,6 +32,7 @@ const face = {
 const CARDSIZE = 102; 	// tamanho da carta (altura e largura)
 let faces = []; 		// Array que armazena objectos face que contêm posicionamentos da imagem e códigos dos paises
 let flippedCards = []; // Array que armazena as cartas que foram viradas
+let timerId = null; // Armazena o ID do temporizador
 
 window.addEventListener("load", init, false);
 
@@ -52,6 +53,18 @@ function init() {
 function startBackgroundMusic() {
 	game.sounds.background.play();
 }
+
+// Inicia o temporizador ao carregar o jogo:
+window.addEventListener("load", () => {
+    startTimer();
+});
+
+// Adiciona o evento de clique ao botão de reiniciar (barra de espaço):
+window.addEventListener("keydown", (event) => {
+	if (event.code === "Space") {
+		restartGame();
+	}
+});
 
 // Cria os paises e coloca-os no tabuleiro de jogo(array board[][])
 function createCountries() {
@@ -152,6 +165,131 @@ function scramble(pairs) {
 
 		// Atualiza o array faces com as faces baralhadas:
 		game.shuffledFaces = shuffledFaces;
+}
+
+// rebaralha as cartas ainda não encontradas:
+function scrambleUnmatchedCards() {
+	// limpa o array de cartas viradas:
+	flippedCards = [];
+
+	const unmatchedCards = Array.from(document.querySelectorAll(".carta:not(.certa)"));
+
+	// adiciona a classe de animação às cartas não encontradas:
+	unmatchedCards.forEach(card => {
+		card.classList.add("shuffle");
+	})
+
+	// esconde todas as cartas que estão viradas:
+	unmatchedCards.forEach(card => {
+		if (!card.classList.contains("escondida")) {
+			card.classList.add("escondida");
+		}
+	})
+
+	//aguarda o término da animação antes de baralhar as cartas:
+	setTimeout(() => {
+		// remove a classe de animação
+		unmatchedCards.forEach(card => {
+			card.classList.remove("shuffle");
+		});
+
+		// baralha as faces das cartas não encontradas:
+		const shuffledFaces = unmatchedCards.map(card => ({
+			x: card.style.backgroundPositionX,
+			y: card.style.backgroundPositionY,
+		})).sort(() => Math.random() - 0.5);
+
+		unmatchedCards.forEach((card, index) => {
+			card.style.backgroundPositionX = shuffledFaces[index].x;
+			card.style.backgroundPositionY = shuffledFaces[index].y;
+	
+			// atualiza a posição da carta no tabuleiro:
+			const row = Math.floor(index / COLS);
+			const col = index % COLS;
+			game.board[row][col] = card; // Armazena a carta no tabuleiro
+		});
+	}, 800); // duração da animação (0.8s)
+}
+
+// Inicia o temporizador:
+function startTimer() {
+	const progressBar = document.getElementById("time");
+	let timeElapsed = 0;
+	const maxTime = parseInt(progressBar.max, 10); // 45 segundos
+
+	// limpa a barra do temporizador:
+	if (timerId) {
+		clearInterval(timerId);
+	}
+
+	// inicia um novo temporizador:
+	timerId = setInterval(() => {
+		timeElapsed++;
+		progressBar.value = timeElapsed;
+
+		// quando faltam 5 segundos, adiciona animação de aviso:
+		if (timeElapsed === maxTime - 5) {
+			progressBar.classList.add("warning");
+			showNotification("As cartas ainda não encontradas serão baralhadas em 5 segundos!");
+		}
+
+		// quando o tempo acabar, baralha as cartas não encontradas:
+		if (timeElapsed === maxTime) {
+			clearInterval(timerId);
+			progressBar.classList.remove("warning");
+			progressBar.value = 0; // Reinicia a barra de progresso
+			scrambleUnmatchedCards();
+			timeElapsed = 0; // Reinicia o tempo
+			startTimer(); // Reinicia o temporizador
+		}
+	}, 1000); // atualiza a cada segundo 
+}
+
+// Mostra a notificação na tela:
+function showNotification(message) {
+	const notification = document.createElement("div");
+	notification.id = "notification";
+	notification.textContent = message;
+	notification.style.position = "fixed";
+	notification.style.top = "70%";
+	notification.style.left = "50%";
+	notification.style.transform = "translateX(-50%)";
+	notification.style.backgroundColor = "#ffffff";
+	notification.style.border = "2px solid #000000";
+	notification.style.fontSize = "18px";
+	notification.style.color = "#000000";
+	notification.style.padding = "20px";
+	notification.style.borderRadius = "10px";
+	notification.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
+	notification.style.zIndex = "1000";
+	document.body.appendChild(notification);
+
+	setTimeout(() => {
+		notification.remove();
+	}, 5000); // remove a notificação após 5 segundos
+}
+
+// Reinicia o jogo:
+function restartGame() {
+	// limpa o array de cartas viradas:
+	flippedCards = [];
+
+	// baralha as cartas novamente:
+	scramble(ROWS * COLS / 2);
+
+	// remove todas as cartas do stage:
+	const stage = game.stage;
+	while (stage.firstChild) {
+		stage.removeChild(stage.firstChild);
+	}
+
+	// renderiza as cartas novamente:
+	render();
+
+	// reinicia o temporizador:
+	const progressBar = document.getElementById("time");
+	progressBar.value = 0; // Reseta a barra de progresso
+	startTimer(); // Reseta o temporizador
 }
 
 function exemplo (){
