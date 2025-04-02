@@ -11,7 +11,8 @@ const sounds = {
 	background: null,
 	flip: null,
 	success: null,
-	hide: null
+	hide: null,
+	win: null
 };
 
 // numero de linhas e colunas do tabuleiro;
@@ -32,7 +33,9 @@ const face = {
 const CARDSIZE = 102; 	// tamanho da carta (altura e largura)
 let faces = []; 		// Array que armazena objectos face que contêm posicionamentos da imagem e códigos dos paises
 let flippedCards = []; // Array que armazena as cartas que foram viradas
+let cardsUnguessed = 16; // Quantidade de cartas por adivinhar
 let timerId = null; // Armazena o ID do temporizador
+let gameRunning = false;
 
 window.addEventListener("load", init, false);
 
@@ -61,6 +64,9 @@ window.addEventListener("load", () => {
 
 // Adiciona o evento de clique ao botão de reiniciar (barra de espaço):
 window.addEventListener("keydown", (event) => {
+	if (!gameRunning) {
+		return
+	}
 	if (event.code === "Space") {
 		restartGame();
 	}
@@ -104,6 +110,7 @@ function flipCard(card) {
 		if (flippedCards.length === 2){
 			checkMatch();
 		}
+		cardsUnguessed == 0 ? win(10) : ""
 	}	
 }
 
@@ -117,6 +124,9 @@ function checkMatch(){
 		card1.classList.add("certa");
 		card2.classList.add("certa");
 		flippedCards = []; // limpa o array de cartas viradas
+		console.log("Cards ungessed " + cardsUnguessed)
+		cardsUnguessed -= 2
+		console.log("Cards ungessed " + cardsUnguessed)
 	} else {
 		game.sounds.hide.play();
 		setTimeout(() => {
@@ -152,7 +162,6 @@ function render() {
 		stage.appendChild(card); 
 	});
 }
-
 
 // baralha as cartas no tabuleiro
 function scramble(pairs) {
@@ -223,6 +232,7 @@ function startTimer() {
 	}
 
 	// inicia um novo temporizador:
+	gameRunning = true;
 	timerId = setInterval(() => {
 		timeElapsed++;
 		progressBar.value = timeElapsed;
@@ -230,7 +240,7 @@ function startTimer() {
 		// quando faltam 5 segundos, adiciona animação de aviso:
 		if (timeElapsed === maxTime - 5) {
 			progressBar.classList.add("warning");
-			showNotification("As cartas ainda não encontradas serão baralhadas em 5 segundos!");
+			showNotification("As cartas ainda não encontradas serão baralhadas em 5 segundos!", 5);
 		}
 
 		// quando o tempo acabar, baralha as cartas não encontradas:
@@ -240,33 +250,25 @@ function startTimer() {
 			progressBar.value = 0; // Reinicia a barra de progresso
 			scrambleUnmatchedCards();
 			timeElapsed = 0; // Reinicia o tempo
-			startTimer(); // Reinicia o temporizador
+			gameRunning ? startTimer() : ""; // Reinicia o temporizador
 		}
 	}, 1000); // atualiza a cada segundo 
 }
 
 // Mostra a notificação na tela:
-function showNotification(message) {
+function showNotification(message, time) {
 	const notification = document.createElement("div");
 	notification.id = "notification";
 	notification.textContent = message;
-	notification.style.position = "fixed";
-	notification.style.top = "70%";
-	notification.style.left = "50%";
-	notification.style.transform = "translateX(-50%)";
-	notification.style.backgroundColor = "#ffffff";
-	notification.style.border = "2px solid #000000";
-	notification.style.fontSize = "18px";
-	notification.style.color = "#000000";
-	notification.style.padding = "20px";
-	notification.style.borderRadius = "10px";
-	notification.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.2)";
-	notification.style.zIndex = "1000";
 	document.body.appendChild(notification);
-
-	setTimeout(() => {
+	if (time != null) {
+		setTimeout(() => {
+			notification.remove();
+		}, time * 1000); // remove a notificação após (time * 1000) segundos
+	}
+	else{
 		notification.remove();
-	}, 5000); // remove a notificação após 5 segundos
+	}
 }
 
 // Reinicia o jogo:
@@ -303,23 +305,14 @@ function exemplo (){
   umaFace.novaProp="asdasd"
 }
 
- 
-function tempo() {
-  let contador=0;
-  let maxCount=60;
-
-  let timeHandler= setInterval(()=>{
-	contador++;
-	document.getElementById("time").value=contador;
-	if(contador===maxCount-5)document.getElementById("time").classList.add("warning");
-	if(contador===maxCount){
-		clearInterval(timeHandler);
-		document.getElementById("time").classList.remove("warning");
-	} 
-  },1)
-
+function win(time = 30) {
+	gameRunning = false;
+	game.sounds.background.pause();
+	game.sounds.currentTime = 0;
+	game.sounds.win.play();
+	showNotification("Ganhou! Todos os pares foram encontrados", time)
+	restartGame()
 }
-
 
 /* ------------------------------------------------------------------------------------------------  
  ** /!\ NÃO MODIFICAR ESTAS FUNÇÕES /!\
