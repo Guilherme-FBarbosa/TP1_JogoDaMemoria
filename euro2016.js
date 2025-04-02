@@ -36,6 +36,8 @@ let flippedCards = []; // Array que armazena as cartas que foram viradas
 let cardsUnguessed = 16; // Quantidade de cartas por adivinhar
 let timerId = null; // Armazena o ID do temporizador
 let gameRunning = false;
+let moves = 0; // contador de movimentos do jogador
+let startTime = 0; // tempo de início do jogo
 
 window.addEventListener("load", init, false);
 
@@ -45,11 +47,16 @@ function init() {
 	getFaces(); 		// calcular as faces e guardar no array faces
 	createCountries();	// criar países
 
+	cardsUnguessed = ROWS * COLS;
+
+	// inicia o tempo ao carregar o jogo:
+	startTime = Date.now(); // Regista o tempo de início do jogo
+
 	// Após o primeiro clique, o som de fundo começa a tocar:
 	// Tivemos de fazer isto pois a maioria dos navegadores não permitem que o som comece a tocar sem interação do utilizador.
 	document.addEventListener("click", startBackgroundMusic, { once: true });
-	 
-	//completar
+
+	console.log("Jogo iniciado. Cartas por adivinhar:", cardsUnguessed);
 }
 
 // Inicia o som de fundo:
@@ -106,11 +113,12 @@ function flipCard(card) {
 		card.classList.remove("escondida");
 		flippedCards.push(card); // Adiciona a carta ao array de cartas viradas
 	
+		moves++;
+
 		// Verifica se duas cartas foram viradas:
 		if (flippedCards.length === 2){
 			checkMatch();
 		}
-		cardsUnguessed == 0 ? win(10) : ""
 	}	
 }
 
@@ -124,9 +132,15 @@ function checkMatch(){
 		card1.classList.add("certa");
 		card2.classList.add("certa");
 		flippedCards = []; // limpa o array de cartas viradas
-		console.log("Cards ungessed " + cardsUnguessed)
-		cardsUnguessed -= 2
-		console.log("Cards ungessed " + cardsUnguessed)
+		console.log("Cards ungessed " + cardsUnguessed);
+		cardsUnguessed -= 2;
+		console.log("Cards ungessed " + cardsUnguessed);
+
+		// Verifica se todas as cartas foram encontradas:
+		if (cardsUnguessed === 0) {
+			const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+			win(elapsedTime, moves);
+		}
 	} else {
 		game.sounds.hide.play();
 		setTimeout(() => {
@@ -186,14 +200,14 @@ function scrambleUnmatchedCards() {
 	// adiciona a classe de animação às cartas não encontradas:
 	unmatchedCards.forEach(card => {
 		card.classList.add("shuffle");
-	})
+	});
 
 	// esconde todas as cartas que estão viradas:
 	unmatchedCards.forEach(card => {
 		if (!card.classList.contains("escondida")) {
 			card.classList.add("escondida");
 		}
-	})
+	});
 
 	//aguarda o término da animação antes de baralhar as cartas:
 	setTimeout(() => {
@@ -208,15 +222,23 @@ function scrambleUnmatchedCards() {
 			y: card.style.backgroundPositionY,
 		})).sort(() => Math.random() - 0.5);
 
+		// Atualiza as posições de fundo das cartas e o array game.shuffledFaces:
 		unmatchedCards.forEach((card, index) => {
 			card.style.backgroundPositionX = shuffledFaces[index].x;
 			card.style.backgroundPositionY = shuffledFaces[index].y;
 	
-			// atualiza a posição da carta no tabuleiro:
-			const row = Math.floor(index / COLS);
-			const col = index % COLS;
-			game.board[row][col] = card; // Armazena a carta no tabuleiro
+			// atualiza o array game.shuffledFaces:
+			game.shuffledFaces[index] = {
+				x: shuffledFaces[index].x,
+				y: shuffledFaces[index].y,
+			};
 		});
+
+		// Verifica se todas as cartas foram encontradas após o reembaralhamento:
+        if (cardsUnguessed === 0) {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            win(elapsedTime, moves);
+        }
 	}, 800); // duração da animação (0.8s)
 }
 
@@ -271,10 +293,13 @@ function showNotification(message, time) {
 	}
 }
 
-// Reinicia o jogo:
 function restartGame() {
-	// limpa o array de cartas viradas:
+	// Redefine o estado do jogo:
 	flippedCards = [];
+	cardsUnguessed = ROWS * COLS;
+	moves = 0;
+	startTime = Date.now();
+	gameRunning = true;
 
 	// baralha as cartas novamente:
 	scramble(ROWS * COLS / 2);
@@ -292,6 +317,12 @@ function restartGame() {
 	const progressBar = document.getElementById("time");
 	progressBar.value = 0; // Reseta a barra de progresso
 	startTimer(); // Reseta o temporizador
+
+	// Reinicia o som de fundo:
+	game.sounds.background.currentTime = 0;
+	game.sounds.background.play();
+
+	console.log("Jogo reiniciado. Cartas por adivinhar:", cardsUnguessed);
 }
 
 function exemplo (){
@@ -305,13 +336,30 @@ function exemplo (){
   umaFace.novaProp="asdasd"
 }
 
-function win(time = 30) {
+function win(elapsedTime, moves) {
 	gameRunning = false;
+	clearInterval(timerId);
 	game.sounds.background.pause();
-	game.sounds.currentTime = 0;
+	game.sounds.background.currentTime = 0;
 	game.sounds.win.play();
-	showNotification("Ganhou! Todos os pares foram encontrados", time)
-	restartGame()
+
+	const score = calculateScore(elapsedTime, moves);
+
+	showNotification(
+		"Parabéns! Você ganhou o jogo em " + elapsedTime + " segundos com " + moves + " movimentos. " +
+		"Sua pontuação final é " + score + ". " +
+		"O jogo será reiniciado dentro de segundos.",
+		10
+	);
+
+	setTimeout(restartGame, 10000); // Reinicia o jogo após 5 segundos
+}
+
+function calculateScore(time, moves) {
+	const baseScore = 1000; // Pontuação base
+	const timePenalty = time * 2; // Penalidade por tempo (quanto maior o tempo, maior a penalidade)
+	const movePenalty = moves * 5; // Penalidade por movimentos (quanto mais movimentos, maior a penalidade)
+	return Math.max(baseScore - timePenalty - movePenalty, 0); // Garante que a pontuação não fique negativa
 }
 
 /* ------------------------------------------------------------------------------------------------  
