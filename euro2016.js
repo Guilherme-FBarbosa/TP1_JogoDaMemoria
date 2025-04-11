@@ -43,7 +43,7 @@ const sounds = {
 };
 
 game.sounds = sounds; // Adicionar os sons sons do jogo ao objeto game.
-game.board  = Array(COLS).fill().map(() => Array(ROWS)); // criação do tabuleiro como um array de 6 linhas x 8 colunas
+game.board = Array(COLS).fill().map(() => Array(ROWS)); // criação do tabuleiro como um array de 6 linhas x 8 colunas
 
 window.addEventListener("load", init, false);
 
@@ -80,8 +80,8 @@ function createCountries() {
 			
 		virar a carta:
 			umaCarta.classList.remove("escondida");
-    */
-   
+	*/
+
 	// Define o tamanho do tabuleiro:
 	const pairs = TOTAL_CARDS / 2;
 
@@ -95,52 +95,67 @@ function createCountries() {
 // baralha as cartas no tabuleiro
 function scramble(pairs) {
 	// Duplica e baralha as faces:
-	const shuffledFaces = [];
+	const shuffledCards = [];
 	for (let i = 0; i < pairs; i++) {
-		shuffledFaces.push(faces[i]);
-		shuffledFaces.push(faces[i]);
+		shuffledCards.push(faces[i]);
+		shuffledCards.push(faces[i]);
 	}
 	// Baralha as faces:
-	shuffledFaces.sort(() => Math.random() - 0.5);
+	shuffledCards.sort(() => Math.random() - 0.5);
 
 	// Atualiza o array faces com as faces baralhadas:
-	game.shuffledFaces = shuffledFaces;
+	game.shuffledCards = shuffledCards;
 }
 
 // Adicionar as cartas do tabuleiro à stage
 function render() {
 	const stage = game.stage;
 
-    let index = 0; // Índice para rastrear a carta atual
-    const interval = setInterval(() => {
-        if (index >= game.shuffledFaces.length) {
-            clearInterval(interval); // Para o intervalo quando todas as cartas forem adicionadas
-            return;
-        }
+	for (let index = 0; index < TOTAL_CARDS; index++) {
+		const face = game.shuffledCards[index];
+		const card = document.createElement("div");
+		card.classList.add("carta");
+		card.style.backgroundPositionX = face.x;
+		card.style.backgroundPositionY = face.y;
 
-        const face = game.shuffledFaces[index];
-        const card = document.createElement("div");
-        card.classList.add("carta");
-        card.style.backgroundPositionX = face.x;
-        card.style.backgroundPositionY = face.y;
+		// Calcula a posição da carta no tabuleiro:
+		const row = Math.floor(index / COLS);
+		const col = index % COLS;
+		game.board[row][col] = card; // Armazena a carta no tabuleiro
 
-        // Calcula a posição da carta no tabuleiro:
-        const row = Math.floor(index / COLS);
-        const col = index % COLS;
-        game.board[row][col] = card; // Armazena a carta no tabuleiro
+		// Define a posição da carta no stage:
+		card.style.top = row * CARDSIZE + "px";
+		card.style.left = col * CARDSIZE + "px";
 
-        // Define a posição da carta no stage:
-        card.style.top = row * CARDSIZE + "px";
-        card.style.left = col * CARDSIZE + "px";
+		// Adiciona a carta ao stage e o evento de clique à ela:
+		card.addEventListener("click", () => flipCard(card));
+		stage.appendChild(card);
+		// DelayNextAction(500)
+	}
 
-        // Adiciona a carta ao stage e o evento de clique à ela:
-        card.addEventListener("click", () => flipCard(card));
-        stage.appendChild(card);
+	// index++; // Incrementa o índice para a próxima carta
+	// }, 500); // Adiciona uma carta a cada meio segundo
 
-        index++; // Incrementa o índice para a próxima carta
-    }, 500); // Adiciona uma carta a cada meio segundo
+	// const cards = document.getElementsByClassName("carta")
+	// console.log("==========CARTAS============")
+	// console.log(cards)
+	// console.log("==========CARTAS============")
+	// for (let index = 0; index < cards.length; index++) {
+	// 	var card = cards[index];
+	// 	console.log("=================================")
+	// 	console.log("CARTA" + card)
+	// 	console.log("=================================")
+	// 	card.classList.add("escondida");
+	// 	stage.appendChild(card)
+	// }
+
 }
-
+// function DelayNextAction(milliseconds) {
+//     const start = Date.now();
+//     while (Date.now() - start < milliseconds) {
+//         // Busy-wait loop
+//     }
+// }
 // Inicia o som de fundo:
 function startBackgroundMusic() {
 	game.sounds.background.play();
@@ -183,26 +198,26 @@ function startTimer() {
 
 // Vira a carta, mostrando ou escondendo a imagem e toca o respetivo som:
 function flipCard(card) {
-	if (card.classList.contains("escondida") && flippedCards.length < 2){
+	if (card.classList.contains("escondida") && flippedCards.length < 2) {
 		game.sounds.flip.play();
 		card.classList.remove("escondida");
 		flippedCards.push(card); // Adiciona a carta ao array de cartas viradas
-	
+
 		moves++;
 
 		// Verifica se duas cartas foram viradas:
-		if (flippedCards.length === 2){
+		if (flippedCards.length === 2) {
 			checkMatch();
 		}
-	}	
+	}
 }
 
 // Verifica se as cartas viradas são iguais:
-function checkMatch(){
+function checkMatch() {
 	const [card1, card2] = flippedCards;
 
 	// Compara as posições de fundo das cartas para saber se são iguais:
-	if (card1.style.backgroundPosition === card2.style.backgroundPosition){
+	if (card1.style.backgroundPosition === card2.style.backgroundPosition) {
 		game.sounds.success.play();
 		card1.classList.add("certa");
 		card2.classList.add("certa");
@@ -253,28 +268,28 @@ function scrambleUnguessedCards() {
 		});
 
 		// baralha as faces das cartas não encontradas:
-		const shuffledFaces = unguessedCards.map(card => ({
+		const shuffledCards = unguessedCards.map(card => ({
 			x: card.style.backgroundPositionX,
 			y: card.style.backgroundPositionY,
 		})).sort(() => Math.random() - 0.5);
 
-		// Atualiza as posições de fundo das cartas e o array game.shuffledFaces:
+		// Atualiza as posições de fundo das cartas e o array game.shuffledCards:
 		unguessedCards.forEach((card, index) => {
-			card.style.backgroundPositionX = shuffledFaces[index].x;
-			card.style.backgroundPositionY = shuffledFaces[index].y;
-	
-			// atualiza o array game.shuffledFaces:
-			game.shuffledFaces[index] = {
-				x: shuffledFaces[index].x,
-				y: shuffledFaces[index].y,
+			card.style.backgroundPositionX = shuffledCards[index].x;
+			card.style.backgroundPositionY = shuffledCards[index].y;
+
+			// atualiza o array game.shuffledCards:
+			game.shuffledCards[index] = {
+				x: shuffledCards[index].x,
+				y: shuffledCards[index].y,
 			};
 		});
 
 		// Verifica se todas as cartas foram encontradas após o reembaralhamento:
-        if (unguessedCards === 0) {
-            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-            win(elapsedTime, moves);
-        }
+		if (unguessedCards === 0) {
+			const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+			win(elapsedTime, moves);
+		}
 	}, 800); // duração da animação (0.8s)
 }
 
@@ -289,7 +304,7 @@ function showNotification(message, time) {
 			notification.remove();
 		}, time * 1000); // remove a notificação após (time * 1000) segundos
 	}
-	else{
+	else {
 		notification.remove();
 	}
 }
@@ -365,7 +380,7 @@ function calculateScore(time, moves) {
 /* ------------------------------------------------------------------------------------------------  
  ** /!\ NÃO MODIFICAR ESTAS FUNÇÕES /!\
 -------------------------------------------------------------------------------------------------- */
- 
+
 // configuração do audio
 function setupAudio() {
 	game.sounds.background = document.querySelector("#backgroundSnd");
@@ -375,7 +390,7 @@ function setupAudio() {
 	game.sounds.win = document.querySelector("#goalSnd");
 
 	// definições de volume;
-	game.sounds.background.volume=0.05;  // o volume varia entre 0 e 1
+	game.sounds.background.volume = 0.05;  // o volume varia entre 0 e 1
 
 	// nesta pode-se mexer se for necessário acrescentar ou configurar mais sons
 
@@ -383,7 +398,7 @@ function setupAudio() {
 
 // calcula as coordenadas das imagens da selecao de cada país e atribui um código único
 function getFaces() {
-/* NÂO MOFIFICAR ESTA FUNCAO */
+	/* NÂO MOFIFICAR ESTA FUNCAO */
 	let offsetX = 1;
 	let offsetY = 1;
 	for (let i = 0; i < 3; i++) {
