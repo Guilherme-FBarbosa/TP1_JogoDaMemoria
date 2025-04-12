@@ -109,6 +109,25 @@ body {
     color: blue;
     border: none;
 }
+
+progress#time::-webkit-progress-value {
+    background-color: blue; 
+    transition: background-color 0.5s;
+}
+
+progress#time::-moz-progress-bar {
+    background-color: blue; 
+    transition: background-color 0.5s;
+}
+
+#time.warning::-webkit-progress-value {
+    animation: warningAnimation 1s infinite alternate;
+}
+
+#time.warning::-moz-progress-bar {
+    animation: warningAnimation 1s infinite alternate;
+}
+
 /* classe que anima a progress bar quando é adicionada à sua lista de classes*/
 .warning{
     animation:warningAnimation 1s infinite alternate;

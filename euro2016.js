@@ -58,10 +58,6 @@ function init() {
 	// inicia o tempo ao carregar o jogo:
 	startTime = Date.now(); // Regista o tempo de início do jogo
 
-	// Após o primeiro clique, o som de fundo começa a tocar:
-	// Tivemos de fazer isto pois a maioria dos navegadores não permitem que o som comece a tocar sem interação do utilizador.
-	document.addEventListener("click", startBackgroundMusic, { once: true });
-	document.addEventListener("click", startTimer, { once: true });
 
 	console.log("Jogo iniciado. Cartas por adivinhar:", unguessedCards);
 }
@@ -110,28 +106,59 @@ function scramble(pairs) {
 // Adicionar as cartas do tabuleiro à stage
 function render() {
 	const stage = game.stage;
+	let index = 0;
 
-	for (let index = 0; index < TOTAL_CARDS; index++) {
+	const interval = setInterval(() => {
+		if (index >= TOTAL_CARDS) {
+			clearInterval(interval);
+
+			setTimeout(() => {
+				hideAllCards();
+				enableGameInteractions();
+			}, 1000);
+			return;
+		}
+
 		const face = game.shuffledCards[index];
 		const card = document.createElement("div");
 		card.classList.add("carta");
 		card.style.backgroundPositionX = face.x;
 		card.style.backgroundPositionY = face.y;
 
-		// Calcula a posição da carta no tabuleiro:
 		const row = Math.floor(index / COLS);
 		const col = index % COLS;
-		game.board[row][col] = card; // Armazena a carta no tabuleiro
+		game.board[row][col] = card;
 
-		// Define a posição da carta no stage:
 		card.style.top = row * CARDSIZE + "px";
 		card.style.left = col * CARDSIZE + "px";
 
-		// Adiciona a carta ao stage e o evento de clique à ela:
-		card.addEventListener("click", () => flipCard(card));
 		stage.appendChild(card);
-		// DelayNextAction(500)
-	}
+
+		index++;
+	}, 500);
+
+
+	// for (let index = 0; index < TOTAL_CARDS; index++) {
+	// 	const face = game.shuffledCards[index];
+	// 	const card = document.createElement("div");
+	// 	card.classList.add("carta");
+	// 	card.style.backgroundPositionX = face.x;
+	// 	card.style.backgroundPositionY = face.y;
+
+	// 	// Calcula a posição da carta no tabuleiro:
+	// 	const row = Math.floor(index / COLS);
+	// 	const col = index % COLS;
+	// 	game.board[row][col] = card; // Armazena a carta no tabuleiro
+
+	// 	// Define a posição da carta no stage:
+	// 	card.style.top = row * CARDSIZE + "px";
+	// 	card.style.left = col * CARDSIZE + "px";
+
+	// 	// Adiciona a carta ao stage e o evento de clique à ela:
+	// 	card.addEventListener("click", () => flipCard(card));
+	// 	stage.appendChild(card);
+	// 	// DelayNextAction(500)
+	// }
 
 	// index++; // Incrementa o índice para a próxima carta
 	// }, 500); // Adiciona uma carta a cada meio segundo
@@ -150,6 +177,40 @@ function render() {
 	// }
 
 }
+
+function hideAllCards() {
+	const cards = document.querySelectorAll(".carta");
+	cards.forEach(card => {
+		card.classList.add("escondida");
+	});
+}
+
+function enableGameInteractions() {
+	const cards = document.querySelectorAll(".carta");
+	cards.forEach(card => {
+		card.addEventListener("click", () => {
+			if (!gameRunning) return;
+
+			flipCard(card);
+		});
+	});
+	console.log("fora foreach")
+	gameRunning = true;
+
+	// Após o primeiro clique, o som de fundo começa a tocar:
+	// Tivemos de fazer isto pois a maioria dos navegadores não permitem que o som comece a tocar sem interação do utilizador.
+	document.addEventListener("click", function (e) {
+		if (e.target.classList.value == "carta") {
+			startBackgroundMusic();
+			startTimer();
+		}
+	}, { once: true });
+
+	console.log("Cartas escondidas. Jogo pronto para começar.");
+}
+
+
+
 // function DelayNextAction(milliseconds) {
 //     const start = Date.now();
 //     while (Date.now() - start < milliseconds) {
@@ -338,7 +399,7 @@ function restartGame() {
 
 	// renderiza as cartas novamente:
 	render();
-
+	
 	// reinicia o temporizador:
 	const progressBar = document.getElementById("time");
 	progressBar.value = 0; // Reseta a barra de progresso
@@ -349,6 +410,7 @@ function restartGame() {
 	game.sounds.background.play();
 
 	console.log("Jogo reiniciado. Cartas por adivinhar:", unguessedCards);
+
 }
 
 function win(elapsedTime, moves) {
