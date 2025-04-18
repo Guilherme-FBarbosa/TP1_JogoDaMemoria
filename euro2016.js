@@ -140,10 +140,10 @@ function hideAllCards() {
 
 function enableGameInteractions() {
 	const cards = document.querySelectorAll(".carta");
+	
 	cards.forEach(card => {
 		card.addEventListener("click", () => {
 			if (!gameRunning) return;
-
 			flipCard(card);
 		});
 	});
