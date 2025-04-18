@@ -92,39 +92,43 @@ function scramble(pairs) {
 
 // Adicionar as cartas do tabuleiro à stage
 function render() {
-	isRendered = false
-	const stage = game.stage;
-	let index = 0;
+	return new Promise((resolve) => {
+		isRendered = false
+		const stage = game.stage;
+		let index = 0;
 
-	const interval = setInterval(() => {
-		if (index >= TOTAL_CARDS) {
-			clearInterval(interval);
-			
-			setTimeout(() => {
-				hideAllCards();
-				enableGameInteractions();
-			}, 1000);
-			isRendered = true
-			return;
-		}
+		const interval = setInterval(() => {
+			if (index >= TOTAL_CARDS) {
+				clearInterval(interval);
 
-		const face = game.shuffledCards[index];
-		const card = document.createElement("div");
-		card.classList.add("carta");
-		card.style.backgroundPositionX = face.x;
-		card.style.backgroundPositionY = face.y;
+				setTimeout(() => {
+					hideAllCards();
+					enableGameInteractions();
+				}, 1000);
+				isRendered = true
+				resolve()
+				return;
+			}
 
-		const row = Math.floor(index / COLS);
-		const col = index % COLS;
-		game.board[row][col] = card;
+			const face = game.shuffledCards[index];
+			const card = document.createElement("div");
+			card.classList.add("carta");
+			card.style.backgroundPositionX = face.x;
+			card.style.backgroundPositionY = face.y;
 
-		card.style.top = row * CARDSIZE + "px";
-		card.style.left = col * CARDSIZE + "px";
+			const row = Math.floor(index / COLS);
+			const col = index % COLS;
+			game.board[row][col] = card;
 
-		stage.appendChild(card);
+			card.style.top = row * CARDSIZE + "px";
+			card.style.left = col * CARDSIZE + "px";
 
-		index++;
-	}, 500);
+			stage.appendChild(card);
+
+			index++;
+		}, 500);
+	})
+
 }
 
 function hideAllCards() {
@@ -317,13 +321,23 @@ window.addEventListener("keydown", (event) => {
 	}
 });
 
-function restartGame() {
+async function restartGame() {
+
 	// Redefine o estado do jogo:
 	flippedCards = [];
 	unguessedCards = ROWS * COLS;
 	moves = 0;
 	startTime = Date.now();
 	gameRunning = true;
+
+	// reinicia o temporizador:
+	clearInterval(timerId)
+	const progressBar = document.getElementById("time");
+	progressBar.value = 0; // Reseta a barra de progresso
+
+	// Reinicia o som de fundo:
+	game.sounds.background.pause()
+	game.sounds.background.currentTime = 0;
 
 	// baralha as cartas novamente:
 	scramble(ROWS * COLS / 2);
@@ -335,16 +349,9 @@ function restartGame() {
 	}
 
 	// renderiza as cartas novamente:
-	render();
-	
-	// reinicia o temporizador:
-	const progressBar = document.getElementById("time");
-	progressBar.value = 0; // Reseta a barra de progresso
-	startTimer(); // Reseta o temporizador
+	await render();
 
-	// Reinicia o som de fundo:
-	game.sounds.background.currentTime = 0;
-	game.sounds.background.play();
+
 
 	console.log("Jogo reiniciado. Cartas por adivinhar:", unguessedCards);
 
