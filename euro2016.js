@@ -32,6 +32,7 @@ let gameRunning = false;
 let moves = 0; // contador de movimentos do jogador
 let startTime = 0; // tempo de início do jogo
 let unguessedCards = TOTAL_CARDS; // Quantidade de cartas por adivinhar
+let isRendered = false;
 
 // sons do jogo
 const sounds = {
@@ -105,17 +106,19 @@ function scramble(pairs) {
 
 // Adicionar as cartas do tabuleiro à stage
 function render() {
+	isRendered = false
 	const stage = game.stage;
 	let index = 0;
 
 	const interval = setInterval(() => {
 		if (index >= TOTAL_CARDS) {
 			clearInterval(interval);
-
+			
 			setTimeout(() => {
 				hideAllCards();
 				enableGameInteractions();
 			}, 1000);
+			isRendered = true
 			return;
 		}
 
@@ -375,7 +378,7 @@ window.addEventListener("keydown", (event) => {
 	if (!gameRunning) {
 		return
 	}
-	if (event.code === "Space") {
+	if (event.code === "Space" && isRendered) {
 		restartGame();
 	}
 });
