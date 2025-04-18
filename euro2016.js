@@ -367,14 +367,15 @@ function win(elapsedTime, moves) {
 
 	const score = calculateScore(elapsedTime, moves);
 
+	createInput()
 	showNotification(
 		"Parabéns! Você ganhou o jogo em " + elapsedTime + " segundos com " + moves + " movimentos. " +
 		"Sua pontuação final é " + score + ". " +
 		"O jogo será reiniciado dentro de segundos.",
 		10
 	);
-
-	setTimeout(restartGame, 10000); // Reinicia o jogo após 5 segundos
+	saveScore(elapsedTime, moves, score)
+	setTimeout(restartGame, 10000); // Reinicia o jogo após 10 segundos
 }
 
 function calculateScore(time, moves) {
@@ -384,14 +385,37 @@ function calculateScore(time, moves) {
 	return Math.max(baseScore - timePenalty - movePenalty, 0); // Garante que a pontuação não fique negativa
 }
 
-function saveScore(name, moves, time, score) {
+function createInput() {
+    if (document.getElementById("nameInput")) return;
+	
+    const inputDiv = document.createElement("div");
+    inputDiv.id = "userNameInput";
+	
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "nome";
+    input.id = "userName";
+	
+    inputDiv.appendChild(input);
+	
+    document.body.appendChild(inputDiv);
+	setTimeout(inputDiv.remove(), 10000)
+}
+function saveScore(time, moves, score) {
+	var name = document.getElementById("userName").innerText
+	if (name = null) return
+
 	const PersonalUserScore = {
 		userName: name,
 		totalMoves: moves,
 		elapsedTime: time,
 		totalScore: score
 	}
-	var fs = require('fs');
+	console.log("=======================================")
+	console.log("PersonalUserScore")
+	console.log(PersonalUserScore)
+	console.log("=======================================")
+	var fs = require('fs'); // ISTO DÁ ERRO
 	fs.writeFile('scores.json', JSON.stringify(PersonalUserScore), (error) => {
 		if (error) throw error;
 	  });
