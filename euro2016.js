@@ -102,6 +102,9 @@ function render() {
 			
 			setTimeout(() => {
 				hideAllCards();
+				showNotification(
+					"Pressione numa carta para começar o jogo", 5
+				);
 				enableGameInteractions();
 			}, 1000);
 			isRendered = true
@@ -136,10 +139,10 @@ function hideAllCards() {
 
 function enableGameInteractions() {
 	const cards = document.querySelectorAll(".carta");
+	
 	cards.forEach(card => {
 		card.addEventListener("click", () => {
 			if (!gameRunning) return;
-
 			flipCard(card);
 		});
 	});
