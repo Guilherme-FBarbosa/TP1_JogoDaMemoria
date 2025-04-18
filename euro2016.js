@@ -104,6 +104,9 @@ function render() {
 				setTimeout(() => {
 					hideAllCards();
 					enableGameInteractions();
+					showNotification(
+						"Pressione numa carta para começar o jogo e espaço para reiniciar", 5
+					);
 				}, 1000);
 				isRendered = true
 				resolve()
@@ -350,8 +353,6 @@ async function restartGame() {
 
 	// renderiza as cartas novamente:
 	await render();
-
-
 
 	console.log("Jogo reiniciado. Cartas por adivinhar:", unguessedCards);
 
