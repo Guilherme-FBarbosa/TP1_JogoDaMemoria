@@ -384,6 +384,19 @@ function calculateScore(time, moves) {
 	return Math.max(baseScore - timePenalty - movePenalty, 0); // Garante que a pontuação não fique negativa
 }
 
+function saveScore(name, moves, time, score) {
+	const PersonalUserScore = {
+		userName: name,
+		totalMoves: moves,
+		elapsedTime: time,
+		totalScore: score
+	}
+	var fs = require('fs');
+	fs.writeFile('scores.json', JSON.stringify(PersonalUserScore), (error) => {
+		if (error) throw error;
+	  });
+}
+
 /* ------------------------------------------------------------------------------------------------  
  ** /!\ NÃO MODIFICAR ESTAS FUNÇÕES /!\
 -------------------------------------------------------------------------------------------------- */
