@@ -65,20 +65,6 @@ function init() {
 
 // Cria os paises e coloca-os no tabuleiro de jogo(array board[][])
 function createCountries() {
-	/* DICA:
-	Seja umaCarta um elemento DIV, a imagem de carta pode ser obtida nos objetos armazenados no array faces[]; o verso da capa 
-	está armazenado na ultima posicao do array faces[]. Pode também ser obtido através do seletor de classe .escondida do CSS.
-		umaCarta.classList.add("carta"); 	
-		umaCarta.style.backgroundPositionX=faces[0].x;
-		umaCarta.style.backgroundPositionX=faces[0].y;
-
-		Colocar uma carta escondida:
-			umaCarta.classList.add("escondida");
-			
-		virar a carta:
-			umaCarta.classList.remove("escondida");
-	*/
-
 	// Define o tamanho do tabuleiro:
 	const pairs = TOTAL_CARDS / 2;
 
@@ -139,46 +125,6 @@ function render() {
 
 		index++;
 	}, 500);
-
-
-	// for (let index = 0; index < TOTAL_CARDS; index++) {
-	// 	const face = game.shuffledCards[index];
-	// 	const card = document.createElement("div");
-	// 	card.classList.add("carta");
-	// 	card.style.backgroundPositionX = face.x;
-	// 	card.style.backgroundPositionY = face.y;
-
-	// 	// Calcula a posição da carta no tabuleiro:
-	// 	const row = Math.floor(index / COLS);
-	// 	const col = index % COLS;
-	// 	game.board[row][col] = card; // Armazena a carta no tabuleiro
-
-	// 	// Define a posição da carta no stage:
-	// 	card.style.top = row * CARDSIZE + "px";
-	// 	card.style.left = col * CARDSIZE + "px";
-
-	// 	// Adiciona a carta ao stage e o evento de clique à ela:
-	// 	card.addEventListener("click", () => flipCard(card));
-	// 	stage.appendChild(card);
-	// 	// DelayNextAction(500)
-	// }
-
-	// index++; // Incrementa o índice para a próxima carta
-	// }, 500); // Adiciona uma carta a cada meio segundo
-
-	// const cards = document.getElementsByClassName("carta")
-	// console.log("==========CARTAS============")
-	// console.log(cards)
-	// console.log("==========CARTAS============")
-	// for (let index = 0; index < cards.length; index++) {
-	// 	var card = cards[index];
-	// 	console.log("=================================")
-	// 	console.log("CARTA" + card)
-	// 	console.log("=================================")
-	// 	card.classList.add("escondida");
-	// 	stage.appendChild(card)
-	// }
-
 }
 
 function hideAllCards() {
@@ -197,7 +143,6 @@ function enableGameInteractions() {
 			flipCard(card);
 		});
 	});
-	console.log("fora foreach")
 	gameRunning = true;
 
 	// Após o primeiro clique, o som de fundo começa a tocar:
@@ -212,14 +157,6 @@ function enableGameInteractions() {
 	console.log("Cartas escondidas. Jogo pronto para começar.");
 }
 
-
-
-// function DelayNextAction(milliseconds) {
-//     const start = Date.now();
-//     while (Date.now() - start < milliseconds) {
-//         // Busy-wait loop
-//     }
-// }
 // Inicia o som de fundo:
 function startBackgroundMusic() {
 	game.sounds.background.play();
@@ -315,10 +252,7 @@ function scrambleUnguessedCards() {
 	// adiciona a classe de animação às cartas não encontradas:
 	unguessedCards.forEach(card => {
 		card.classList.add("shuffle");
-	});
-
-	// esconde todas as cartas que estão viradas:
-	unguessedCards.forEach(card => {
+		// esconde todas as cartas que estão viradas:
 		if (!card.classList.contains("escondida")) {
 			card.classList.add("escondida");
 		}
