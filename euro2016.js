@@ -360,10 +360,12 @@ async function restartGame() {
 }
 
 function win(elapsedTime, moves) {
-	// return new Promise((resolve) => {
-
 	gameRunning = false;
 	clearInterval(timerId);
+	const progressBar = document.getElementById("time");
+	if(progressBar.classList.contains("warning")){
+		progressBar.classList.remove("warning");
+	}
 	game.sounds.background.pause();
 	game.sounds.background.currentTime = 0;
 	game.sounds.win.play();
@@ -377,12 +379,14 @@ function win(elapsedTime, moves) {
 		"O jogo será reiniciado dentro de segundos.",
 		10
 	);
-	// resolve()
-	saveScore(elapsedTime, moves, score)
-	// resolve()
-	createScoreBoard()
-	setTimeout(restartGame, 10000); // Reinicia o jogo após 10 segundos
-	// })
+	document.getElementById("btn-submit").addEventListener('click', () => {
+		saveScore(elapsedTime, moves, score).then(() => {
+			createScoreBoard()
+			setTimeout(restartGame, 10000); // Reinicia o jogo após 10 segundos
+
+		})
+	})
+
 }
 
 function calculateScore(time, moves) {
@@ -409,18 +413,24 @@ function createInput() {
 	userNameInput.placeholder = "nome";
 	userNameInput.id = "userName";
 	userNameInput.className = "userName";
-	
+
+	const submitButton = document.createElement("button");
+	submitButton.textContent = "Submit"
+	submitButton.id = "btn-submit"
+
+
 	userNameDiv.appendChild(userNameLabel);
 	userNameDiv.appendChild(userNameInput);
+	userNameDiv.appendChild(submitButton)
 
 	document.body.appendChild(userNameDiv);
 
 	setInterval(() => {
 		userNameDiv.remove();
-	}, 10000);
+	}, 5000);
 }
 
-function createScoreBoard(scores) {
+function createScoreBoard() {
 	const scoresDiv = document.createElement('div');
 	scoresDiv.className = 'scoresDiv';
 
@@ -438,24 +448,20 @@ function createScoreBoard(scores) {
 	}, 10000);
 }
 function saveScore(time, moves, score) {
-	var name = document.getElementById("userName").innerText
-	if (name = null) return
+	return new Promise((resolve) => {
+		var name = document.getElementById("userName").value
+		console.log(name)
+		if (name == null) return
 
-	const PersonalUserScore = {
-		userName: name,
-		totalMoves: moves,
-		elapsedTime: time,
-		totalScore: score
-	}
-	console.log("=======================================")
-	console.log("PersonalUserScore")
-	console.log(PersonalUserScore)
-	console.log("=======================================")
-	scores.push(PersonalUserScore)
-	console.log("=======================================")
-	console.log("scores")
-	console.log(scores)
-	console.log("=======================================")
+		const PersonalUserScore = {
+			userName: name ? name : "No-Name",
+			totalMoves: moves,
+			elapsedTime: time,
+			totalScore: score
+		}
+		scores.push(PersonalUserScore)
+		resolve()
+	})
 }
 
 /* ------------------------------------------------------------------------------------------------  
