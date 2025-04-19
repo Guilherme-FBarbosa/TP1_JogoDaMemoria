@@ -33,6 +33,7 @@ let moves = 0; // contador de movimentos do jogador
 let startTime = 0; // tempo de início do jogo
 let unguessedCards = TOTAL_CARDS; // Quantidade de cartas por adivinhar
 let isRendered = false;
+let scores = [];
 
 // sons do jogo
 const sounds = {
@@ -143,7 +144,7 @@ function hideAllCards() {
 
 function enableGameInteractions() {
 	const cards = document.querySelectorAll(".carta");
-	
+
 	cards.forEach(card => {
 		card.addEventListener("click", () => {
 			if (!gameRunning) return;
@@ -359,6 +360,8 @@ async function restartGame() {
 }
 
 function win(elapsedTime, moves) {
+	// return new Promise((resolve) => {
+
 	gameRunning = false;
 	clearInterval(timerId);
 	game.sounds.background.pause();
@@ -374,8 +377,12 @@ function win(elapsedTime, moves) {
 		"O jogo será reiniciado dentro de segundos.",
 		10
 	);
+	// resolve()
 	saveScore(elapsedTime, moves, score)
+	// resolve()
+	createScoreBoard()
 	setTimeout(restartGame, 10000); // Reinicia o jogo após 10 segundos
+	// })
 }
 
 function calculateScore(time, moves) {
@@ -386,20 +393,49 @@ function calculateScore(time, moves) {
 }
 
 function createInput() {
-    if (document.getElementById("nameInput")) return;
+	if (document.getElementById("userNameDiv")) return;
+
+	const userNameDiv = document.createElement("div");
+	userNameDiv.id = "userNameDiv";
+	userNameDiv.className = "userNameDiv";
+
+	const userNameLabel = document.createElement("label");
+	userNameLabel.className = "userNameLabel";
+	userNameLabel.htmlFor = "userName";
+	userNameLabel.textContent = "Nome:";
+
+	const userNameInput = document.createElement("input");
+	userNameInput.type = "text";
+	userNameInput.placeholder = "nome";
+	userNameInput.id = "userName";
+	userNameInput.className = "userName";
 	
-    const inputDiv = document.createElement("div");
-    inputDiv.id = "userNameInput";
-	
-    const input = document.createElement("input");
-    input.type = "text";
-    input.placeholder = "nome";
-    input.id = "userName";
-	
-    inputDiv.appendChild(input);
-	
-    document.body.appendChild(inputDiv);
-	setTimeout(inputDiv.remove(), 10000)
+	userNameDiv.appendChild(userNameLabel);
+	userNameDiv.appendChild(userNameInput);
+
+	document.body.appendChild(userNameDiv);
+
+	setInterval(() => {
+		userNameDiv.remove();
+	}, 10000);
+}
+
+function createScoreBoard(scores) {
+	const scoresDiv = document.createElement('div');
+	scoresDiv.className = 'scoresDiv';
+
+	scores.forEach(function (value) {
+		const newScoreDiv = document.createElement('div');
+		newScoreDiv.className = 'score';
+		newScoreDiv.innerHTML = `User: ${value.userName}, Moves: ${value.totalMoves}, Time: ${value.elapsedTime}, Score: ${value.totalScore}`;
+		scoresDiv.appendChild(newScoreDiv);
+	});
+
+	document.body.appendChild(scoresDiv);
+
+	setInterval(() => {
+		scoresDiv.remove();
+	}, 10000);
 }
 function saveScore(time, moves, score) {
 	var name = document.getElementById("userName").innerText
@@ -415,10 +451,11 @@ function saveScore(time, moves, score) {
 	console.log("PersonalUserScore")
 	console.log(PersonalUserScore)
 	console.log("=======================================")
-	var fs = require('fs'); // ISTO DÁ ERRO
-	fs.writeFile('scores.json', JSON.stringify(PersonalUserScore), (error) => {
-		if (error) throw error;
-	  });
+	scores.push(PersonalUserScore)
+	console.log("=======================================")
+	console.log("scores")
+	console.log(scores)
+	console.log("=======================================")
 }
 
 /* ------------------------------------------------------------------------------------------------  
