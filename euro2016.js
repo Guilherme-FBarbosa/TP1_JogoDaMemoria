@@ -382,9 +382,10 @@ function win(elapsedTime, moves) {
 	document.getElementById("btn-submit").addEventListener('click', () => {
 		saveScore(elapsedTime, moves, score).then(() => {
 			createScoreBoard()
-			setTimeout(restartGame, 10000); // Reinicia o jogo após 10 segundos
-
+			setTimeout(restartGame, 3000); // Reinicia o jogo após 10 segundos
+			
 		})
+		document.getElementById("userNameDiv").remove();
 	})
 
 }
@@ -417,6 +418,7 @@ function createInput() {
 	const submitButton = document.createElement("button");
 	submitButton.textContent = "Submit"
 	submitButton.id = "btn-submit"
+	submitButton.className = "submitBtn"
 
 
 	userNameDiv.appendChild(userNameLabel);
@@ -425,9 +427,6 @@ function createInput() {
 
 	document.body.appendChild(userNameDiv);
 
-	setInterval(() => {
-		userNameDiv.remove();
-	}, 5000);
 }
 
 function createScoreBoard() {
@@ -442,10 +441,6 @@ function createScoreBoard() {
 	});
 
 	document.body.appendChild(scoresDiv);
-
-	setInterval(() => {
-		scoresDiv.remove();
-	}, 10000);
 }
 function saveScore(time, moves, score) {
 	return new Promise((resolve) => {

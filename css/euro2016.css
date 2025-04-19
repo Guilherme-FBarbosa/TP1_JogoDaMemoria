@@ -229,6 +229,8 @@ progress#time.warning {
     border-radius: 8px;
     background-color: #f9f9f9;
     text-align: center;
+    position: relative;
+    top: 15px;
 }
 
 .userName {
@@ -261,11 +263,17 @@ progress#time.warning {
 }
 
 .scoresDiv {
-    margin: 20px;
+    /* Remove o float e usa position absoluta */
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    margin: 10px;
+    /* remove margens que empurrariam ele pra dentro */
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
     background-color: #f9f9f9;
+    width: 29%;
 }
 
 .score {
