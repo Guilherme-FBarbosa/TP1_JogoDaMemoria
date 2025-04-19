@@ -41,7 +41,8 @@ const sounds = {
 	flip: null,
 	success: null,
 	hide: null,
-	win: null
+	win: null,
+	distribute: null
 };
 
 game.sounds = sounds; // Adicionar os sons sons do jogo ao objeto game.
@@ -97,6 +98,7 @@ function render() {
 		isRendered = false
 		const stage = game.stage;
 		let index = 0;
+		startDistributeMusic();
 
 		const interval = setInterval(() => {
 			if (index >= TOTAL_CARDS) {
@@ -168,6 +170,10 @@ function enableGameInteractions() {
 // Inicia o som de fundo:
 function startBackgroundMusic() {
 	game.sounds.background.play();
+}
+
+function startDistributeMusic() {
+	game.sounds.distribute.play();
 }
 
 // Inicia o temporizador:
@@ -382,7 +388,7 @@ function win(elapsedTime, moves) {
 	document.getElementById("btn-submit").addEventListener('click', () => {
 		saveScore(elapsedTime, moves, score).then(() => {
 			createScoreBoard()
-			setTimeout(restartGame, 3000); // Reinicia o jogo após 10 segundos
+			setTimeout(restartGame, 3000); // Reinicia o jogo após 3 segundos
 			
 		})
 		document.getElementById("userNameDiv").remove();
@@ -407,11 +413,11 @@ function createInput() {
 	const userNameLabel = document.createElement("label");
 	userNameLabel.className = "userNameLabel";
 	userNameLabel.htmlFor = "userName";
-	userNameLabel.textContent = "Nome:";
+	userNameLabel.textContent = "Guardar pontuação:";
 
 	const userNameInput = document.createElement("input");
 	userNameInput.type = "text";
-	userNameInput.placeholder = "nome";
+	userNameInput.placeholder = "insira seu nome";
 	userNameInput.id = "userName";
 	userNameInput.className = "userName";
 
@@ -436,7 +442,7 @@ function createScoreBoard() {
 	scores.forEach(function (value) {
 		const newScoreDiv = document.createElement('div');
 		newScoreDiv.className = 'score';
-		newScoreDiv.innerHTML = `User: ${value.userName}, Moves: ${value.totalMoves}, Time: ${value.elapsedTime}, Score: ${value.totalScore}`;
+		newScoreDiv.innerHTML = `Jogador: ${value.userName} | Movimentos: ${value.totalMoves}, Tempo: ${value.elapsedTime}, Pontos: ${value.totalScore}`;
 		scoresDiv.appendChild(newScoreDiv);
 	});
 
@@ -470,6 +476,7 @@ function setupAudio() {
 	game.sounds.flip = document.querySelector("#flipSnd");
 	game.sounds.hide = document.querySelector("#hideSnd");
 	game.sounds.win = document.querySelector("#goalSnd");
+	game.sounds.distribute = document.querySelector("#distributeSnd");
 
 	// definições de volume;
 	game.sounds.background.volume = 0.05;  // o volume varia entre 0 e 1
